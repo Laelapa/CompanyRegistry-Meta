@@ -1,6 +1,7 @@
 package tokenauthority
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -19,7 +20,7 @@ func New(cfg *config.AuthConfig) *TokenAuthority {
 	}
 }
 
-func (t *TokenAuthority) IssueJWT(userID uuid.UUID) (string, error) {
+func (t *TokenAuthority) IssueJWT(userID uuid.UUID) (signedToken string, err error) {
 	now := time.Now().UTC()
 	claims := jwt.RegisteredClaims{
 		Issuer:    t.cfg.JwtIssuer,
@@ -27,4 +28,45 @@ func (t *TokenAuthority) IssueJWT(userID uuid.UUID) (string, error) {
 		IssuedAt:  jwt.NewNumericDate(now),
 		ExpiresAt: jwt.NewNumericDate(now.Add(t.cfg.JwtLifetime)),
 	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	signedToken, err = token.SignedString([]byte(t.cfg.JwtSecret))
+	if err != nil {
+		return "", fmt.Errorf("failed to sign JWT: %w", err)
+	}
+
+	return signedToken, nil
+}
+
+// ValidateJWT parses and validates the provided JWT string.
+// It checks the signature method (must be HS256), the signature itself, and standard claims like expiration.
+//
+// It returns the subject of the token as a UUID.
+// Important: The caller must compare the returned UUID against the expected user.
+func (t *TokenAuthority) ValidateJWT(tokenString string) (subjectUUID uuid.UUID, err error) {
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		&jwt.RegisteredClaims{},
+		func(token *jwt.Token) (any, error) {
+			if token.Method != jwt.SigningMethodHS256 {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Method.Alg())
+			}
+			return []byte(t.cfg.JwtSecret), nil
+		},
+	)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to parse JWT: %w", err)
+	}
+
+	subject, err := token.Claims.GetSubject()
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("failed to extract subject from JWT: %w", err)
+	}
+
+	subjectUUID, err = uuid.Parse(subject)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("token subject is not a valid UUID: %w", err)
+	}
+
+	return subjectUUID, nil
 }
