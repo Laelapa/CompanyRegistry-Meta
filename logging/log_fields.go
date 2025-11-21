@@ -28,7 +28,13 @@ const (
 	// FieldReferer is the Referer header from the request
 	FieldReferer = "referer"
 
-	// Kafka related fields --------------------------
+	// HTTP Server related fields ----------------------
+
+	FieldServerAddr = "server_addr"
+
+	FieldServerPort = "server_port"
+
+	// Kafka related fields ----------------------------
 
 	FieldKafkaTopic   = "kafka_topic"
 	FieldKafkaBrokers = "kafka_brokers"
