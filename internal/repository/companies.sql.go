@@ -8,7 +8,7 @@ package repository
 import (
 	"context"
 
-	uuid_uuid "github.com/google/uuid.UUID"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -64,7 +64,7 @@ DELETE FROM companies
 WHERE ID = $1
 `
 
-func (q *Queries) DeleteCompany(ctx context.Context, id uuid_uuid.UUID) error {
+func (q *Queries) DeleteCompany(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteCompany, id)
 	return err
 }
@@ -75,7 +75,7 @@ FROM companies
 WHERE ID = $1
 `
 
-func (q *Queries) GetCompanyByID(ctx context.Context, id uuid_uuid.UUID) (Company, error) {
+func (q *Queries) GetCompanyByID(ctx context.Context, id uuid.UUID) (Company, error) {
 	row := q.db.QueryRow(ctx, getCompanyByID, id)
 	var i Company
 	err := row.Scan(
@@ -131,13 +131,13 @@ WHERE ID = $1
 `
 
 type UpdateCompanyParams struct {
-	ID            uuid_uuid.UUID `json:"id"`
-	Name          string         `json:"name"`
-	Description   pgtype.Text    `json:"description"`
-	EmployeeCount int32          `json:"employee_count"`
-	Registered    bool           `json:"registered"`
-	CompanyType   string         `json:"company_type"`
-	UpdatedBy     pgtype.UUID    `json:"updated_by"`
+	ID            uuid.UUID   `json:"id"`
+	Name          string      `json:"name"`
+	Description   pgtype.Text `json:"description"`
+	EmployeeCount int32       `json:"employee_count"`
+	Registered    bool        `json:"registered"`
+	CompanyType   string      `json:"company_type"`
+	UpdatedBy     pgtype.UUID `json:"updated_by"`
 }
 
 func (q *Queries) UpdateCompany(ctx context.Context, arg UpdateCompanyParams) error {
