@@ -1,11 +1,6 @@
 package config
 
 import (
-	"fmt"
-	"log" //nolint:depguard // using standard log for config warnings before structured logging is initialized
-	"os"
-	"slices"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -67,71 +62,9 @@ const (
 	defaultLoggerSetup = defaultEnv
 )
 
-func getEnvWithFallback(key, fallback string) string {
-	val := os.Getenv(key)
-	if val == "" {
-		log.Printf("WARNING: environment variable %v not set, falling back to %v", key, fallback)
-		return fallback
-	}
-	return val
-}
-
-func getEnvRequired(key string) (string, error) {
-	val := os.Getenv(key)
-	if val == "" {
-		return "", fmt.Errorf("environment variable %v is required but not set", key)
-	}
-	return val, nil
-}
-
-func getEnvWithFallbackAndValidOptions(key string, fallback string, validoptions ...string) string {
-	val := os.Getenv(key)
-	if !slices.Contains(validoptions, val) {
-		log.Printf("WARNING: invalid value %v for env %v, falling back to %v", val, key, fallback)
-		return fallback
-	}
-	return val
-}
-
-func getEnvIntWithFallback(key string, fallback int) int {
-	val := os.Getenv(key)
-	if val == "" {
-		log.Printf("WARNING: env %v not set, falling back to %v", key, fallback)
-		return fallback
-	}
-
-	intVal, err := strconv.Atoi(val)
-	if err != nil {
-		log.Printf("WARNING: could not parse int from env %v, falling back to %v", key, fallback)
-		return fallback
-	}
-
-	return intVal
-}
-
-// getEnvDurationWithFallback retrieves a duration from an environment variable,
-// uses fallback if non-positive, not parseable, or not set.
-func getEnvDurationWithFallback(key string, fallback time.Duration) time.Duration {
-	val := os.Getenv(key)
-	if val == "" {
-		log.Printf("WARNING: env %v not set, falling back to %v", key, fallback)
-		return fallback
-	}
-
-	dur, err := time.ParseDuration(val)
-	if err != nil {
-		log.Printf("WARNING: env %v is not a valid duration format (%v), falling back to %v", key, val, fallback)
-		return fallback
-	}
-
-	if dur <= 0 {
-		log.Printf("WARNING: env %v must be positive, got %v, falling back to %v", key, dur, fallback)
-		return fallback
-	}
-
-	return dur
-}
-
+// Load reads configuration from environment variables, doing validation and applying defaults.
+// It returns an initialized Config struct or an error if required variables are missing or invalid.
+// The Config struct should, ideally, be treated as readonly after loading.
 func Load() (*Config, error) {
 	validEnvs := []string{
 		"prod", "production",
@@ -148,8 +81,15 @@ func Load() (*Config, error) {
 
 	cfg := &Config{
 		Environment: getEnvWithFallbackAndValidOptions("ENVIRONMENT", defaultEnv, validEnvs...),
+		// Environment: getEnvWithFallbackAndCustomValidation(
+		// 	"ENVIRONMENT",
+		// 	defaultEnv,
+		// 	func(val string) bool {
+		// 		return slices.Contains(validEnvs, val)
+		// 	},
+		// ),
 		Server: ServerConfig{
-			Port:            getEnvWithFallback("SERVER_PORT", "8080"),
+			Port:            getEnvWithFallbackAndCustomValidation("SERVER_PORT", "8080", validatePort),
 			ShutdownTimeout: getEnvDurationWithFallback("SERVER_SHUTDOWN_TIMEOUT", defaultShutdownTimeout),
 			StaticDir:       getEnvWithFallback("SERVER_STATIC_DIR", defaultStaticDir),
 		},
