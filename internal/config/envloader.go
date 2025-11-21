@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"log"
+	"log" //nolint:depguard // using standard log for config warnings before structured logging is initialized
 	"os"
 	"slices"
 	"strconv"
@@ -47,7 +47,7 @@ type KafkaConfig struct {
 type LoggingConfig struct {
 	ServiceName     string
 	LoggerSetup     string
-	MaxHeaderLength int
+	MaxHeaderLength int // where to truncate long headers in logs
 }
 
 const (
@@ -175,7 +175,7 @@ func Load() (*Config, error) {
 		Logging: LoggingConfig{
 			ServiceName:     getEnvWithFallback("SERVICE_NAME", defaultServiceName),
 			LoggerSetup:     getEnvWithFallbackAndValidOptions("LOGGER_SETUP", defaultLoggerSetup, validEnvs...),
-			MaxHeaderLength: getEnvIntWithFallback("MAX_HEADER_LENGTH", defaultMaxHeaderLength), // where to truncate long headers in logs
+			MaxHeaderLength: getEnvIntWithFallback("MAX_HEADER_LENGTH", defaultMaxHeaderLength),
 		},
 	}
 	return cfg, nil
