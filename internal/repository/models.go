@@ -5,12 +5,12 @@
 package repository
 
 import (
-	uuid_uuid "github.com/google/uuid.UUID"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Company struct {
-	ID            uuid_uuid.UUID   `json:"id"`
+	ID            uuid.UUID        `json:"id"`
 	Name          string           `json:"name"`
 	Description   pgtype.Text      `json:"description"`
 	EmployeeCount int32            `json:"employee_count"`
@@ -23,7 +23,7 @@ type Company struct {
 }
 
 type User struct {
-	ID           uuid_uuid.UUID   `json:"id"`
+	ID           uuid.UUID        `json:"id"`
 	Username     string           `json:"username"`
 	PasswordHash string           `json:"password_hash"`
 	CreatedAt    pgtype.Timestamp `json:"created_at"`
