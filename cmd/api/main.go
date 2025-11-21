@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/Laelapa/CompanyRegistry/internal/config"
+	"github.com/Laelapa/CompanyRegistry/internal/repository"
 	"github.com/Laelapa/CompanyRegistry/logging"
 )
 
@@ -46,10 +47,13 @@ func run() error {
 	logger.Info("Database pool initialized")
 
 	// Verify db connection
+	logger.Info("Pinging database...")
 	if dbPingErr := dbPool.Ping(ctx); dbPingErr != nil {
 		return fmt.Errorf("failed to ping database: %w", dbPingErr)
 	}
 	logger.Info("Database connection verified")
+
+	queries := repository.New(dbPool)
 
 	return nil
 }
