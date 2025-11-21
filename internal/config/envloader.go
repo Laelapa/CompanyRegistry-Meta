@@ -30,11 +30,9 @@ type DatabaseConfig struct {
 }
 
 type AuthConfig struct {
-	JwtSecret     string
-	JwtIssuer     string
-	JwtLifetime   time.Duration
-	RtSizeInBytes int
-	RtLifetime    time.Duration
+	JwtSecret   string
+	JwtIssuer   string
+	JwtLifetime time.Duration
 }
 
 type KafkaConfig struct {
@@ -61,8 +59,6 @@ const (
 	// Auth
 	defaultMaxHeaderLength = 1024
 	defaultJwtLifetime     = 15 * time.Minute
-	defaultRtSizeInBytes   = 32
-	defaultRtLifetime      = 7 * 24 * time.Hour
 	defaultJwtSecret       = "Default JWT Secret - DO NOT USE IN PRODUCTION" //nolint:gosec // hardcoded secret for dev/testing
 
 	// Logging
@@ -160,11 +156,9 @@ func Load() (*Config, error) {
 			URL: dbURL,
 		},
 		Auth: AuthConfig{
-			JwtSecret:     getEnvWithFallback("JWT_SECRET", defaultJwtSecret),
-			JwtIssuer:     getEnvWithFallback("JWT_ISSUER", getEnvWithFallback("SERVICE_NAME", "my-service")),
-			JwtLifetime:   getEnvDurationWithFallback("JWT_LIFETIME", defaultJwtLifetime),
-			RtSizeInBytes: getEnvIntWithFallback("RT_SIZE_IN_BYTES", defaultRtSizeInBytes),
-			RtLifetime:    getEnvDurationWithFallback("RT_LIFETIME", defaultRtLifetime),
+			JwtSecret:   getEnvWithFallback("JWT_SECRET", defaultJwtSecret),
+			JwtIssuer:   getEnvWithFallback("JWT_ISSUER", getEnvWithFallback("SERVICE_NAME", "my-service")),
+			JwtLifetime: getEnvDurationWithFallback("JWT_LIFETIME", defaultJwtLifetime),
 		},
 		Kafka: KafkaConfig{
 			Brokers: strings.Split(getEnvWithFallback("KAFKA_BROKERS", "localhost:9092"), ","),
