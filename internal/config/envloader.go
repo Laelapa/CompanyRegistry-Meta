@@ -36,8 +36,9 @@ type AuthConfig struct {
 }
 
 type KafkaConfig struct {
-	Brokers []string
-	Topic   struct {
+	ClientID string
+	Brokers  []string
+	Topic    struct {
 		Mutations string
 	}
 }
@@ -161,7 +162,8 @@ func Load() (*Config, error) {
 			JwtLifetime: getEnvDurationWithFallback("JWT_LIFETIME", defaultJwtLifetime),
 		},
 		Kafka: KafkaConfig{
-			Brokers: strings.Split(getEnvWithFallback("KAFKA_BROKERS", "localhost:9092"), ","),
+			ClientID: getEnvWithFallback("SERVICE_NAME", defaultServiceName),
+			Brokers:  strings.Split(getEnvWithFallback("KAFKA_BROKERS", "localhost:9092"), ","),
 			Topic: struct{ Mutations string }{
 				Mutations: getEnvWithFallback("KAFKA_TOPIC_MUTATIONS", "mutations"),
 			},
