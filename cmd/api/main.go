@@ -45,6 +45,8 @@ func run() error {
 		}
 	}()
 
+	tokenAuthority := tokenauthority.New(&cfg.Auth)
+
 	dbPool, err := pgxpool.New(ctx, cfg.DB.URL)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
@@ -61,11 +63,15 @@ func run() error {
 
 	queries := repository.New(dbPool)
 	service := &service.Service{
-		User:    service.NewUserService(adapters.NewPGUserRepoAdapter(queries)),
-		Company: service.NewCompanyService(adapters.NewPGCompanyRepoAdapter(queries)),
+		User: service.NewUserService(
+			adapters.NewPGUserRepoAdapter(queries),
+			tokenAuthority,
+		),
+		Company: service.NewCompanyService(
+			adapters.NewPGCompanyRepoAdapter(queries),
+			tokenAuthority,
+		),
 	}
-
-	tokenAuthority := tokenauthority.New(&cfg.Auth)
 
 	var kafkaClient *kgo.Client // nil if Kafka not configured
 	kafkaBrokers := cfg.Kafka.Brokers

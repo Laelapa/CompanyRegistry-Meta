@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/Laelapa/CompanyRegistry/auth/tokenauthority"
 	"github.com/Laelapa/CompanyRegistry/internal/domain"
 
 	"github.com/google/uuid"
@@ -17,9 +18,16 @@ type CompanyRepository interface {
 }
 
 type CompanyService struct {
-	repo CompanyRepository
+	repo           CompanyRepository
+	tokenAuthority *tokenauthority.TokenAuthority
 }
 
-func NewCompanyService(repo CompanyRepository) *CompanyService {
-	return &CompanyService{repo: repo}
+func NewCompanyService(
+	repo CompanyRepository,
+	tokenAuthority *tokenauthority.TokenAuthority,
+) *CompanyService {
+	return &CompanyService{
+		repo: repo,
+		tokenAuthority: tokenAuthority,		
+	}
 }

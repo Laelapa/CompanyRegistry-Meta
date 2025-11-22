@@ -6,6 +6,7 @@ import (
 
 	"github.com/Laelapa/CompanyRegistry/internal/domain"
 	"github.com/Laelapa/CompanyRegistry/internal/repository"
+	"github.com/jackc/pgx/v5"
 )
 
 type PGUserRepoAdapter struct {
@@ -38,6 +39,9 @@ func (p *PGUserRepoAdapter) Create(ctx context.Context, u *domain.User) (*domain
 func (p *PGUserRepoAdapter) GetByUsername(ctx context.Context, username string) (*domain.User, error) {
 	dbUser, err := p.q.GetUserByUsername(ctx, username)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
 		return nil, err
 	}
 	return p.toDomainType(&dbUser), nil
