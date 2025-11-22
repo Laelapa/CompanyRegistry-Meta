@@ -1,11 +1,5 @@
 package logging
 
-import (
-	"net/http"
-
-	"go.uber.org/zap"
-)
-
 const (
 
 	// Service related fields --------------------------
@@ -28,22 +22,20 @@ const (
 	// FieldReferer is the Referer header from the request
 	FieldReferer = "referer"
 
+	FieldUserID = "user_id"
+
+	// HTTP Server related fields ----------------------
+
+	FieldServerAddr = "server_addr"
+
+	FieldServerPort = "server_port"
+
+	// Kafka related fields ----------------------------
+
+	FieldKafkaTopic   = "kafka_topic"
+	FieldKafkaBrokers = "kafka_brokers"
+
 	// Other common fields -----------------------------
 
 	FieldError = "error"
 )
-
-func (l *Logger) ReqFields(r *http.Request) []zap.Field {
-	if r == nil {
-		return []zap.Field{
-			zap.String(FieldError, "request is nil"),
-		}
-	}
-
-	return []zap.Field{
-		zap.String(FieldRemoteAddr, l.FiletLogValue(getClientIP(r))),
-		zap.String(FieldMethod, r.Method),
-		zap.String(FieldPath, l.FiletLogValue(r.URL.Path)),
-		zap.String(FieldReferer, l.FiletLogValue(r.Referer())),
-	}
-}
