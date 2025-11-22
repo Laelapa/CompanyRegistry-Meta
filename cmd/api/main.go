@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/Laelapa/CompanyRegistry/auth/tokenauthority"
+	"github.com/Laelapa/CompanyRegistry/internal/app"
 	"github.com/Laelapa/CompanyRegistry/internal/config"
 	"github.com/Laelapa/CompanyRegistry/internal/repository"
 	"github.com/Laelapa/CompanyRegistry/logging"
@@ -79,5 +80,15 @@ func run() error {
 		logger.Warn("No Kafka brokers configured, skipping Kafka client initialization")
 	} // If no brokers, kafkaClient remains nil
 
+	app := app.New(
+		&cfg.Server,
+		logger,
+		queries,
+		tokenAuthority,
+		kafkaClient,
+	)
+	if err = app.LaunchServer(ctx); err != nil {
+		return fmt.Errorf("failed to launch server: %w", err)
+	}
 	return nil
 }
