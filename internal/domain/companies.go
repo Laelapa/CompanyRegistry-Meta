@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 )
 
@@ -19,11 +17,9 @@ type Company struct { //nolint:decorder // consts sitting right after their type
 	ID            *uuid.UUID
 	Name          *string
 	Description   *string
-	EmployeeCount *int
+	EmployeeCount *int32
 	Registered    *bool
-	Type          *CompanyType
-	CreatedAt     *time.Time
-	UpdatedAt     *time.Time
+	CompanyType   *CompanyType
 	CreatedBy     *uuid.UUID
 	UpdatedBy     *uuid.UUID
 }
