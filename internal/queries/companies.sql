@@ -20,17 +20,18 @@ SELECT *
 FROM companies
 WHERE ID = $1;
 
--- name: UpdateCompany :exec
+-- name: UpdateCompany :one
 UPDATE companies
 SET
-    name = COALESCE($2, name),
-    description = COALESCE($3, description),
-    employee_count = COALESCE($4, employee_count),
-    registered = COALESCE($5, registered),
-    company_type = COALESCE($6, company_type),
+    name = COALESCE(sqlc.narg('name'), name),
+    description = COALESCE(sqlc.narg('description'), description),
+    employee_count = COALESCE(sqlc.narg('employee_count'), employee_count),
+    registered = COALESCE(sqlc.narg('registered'), registered),
+    company_type = COALESCE(sqlc.narg('company_type'), company_type),
     updated_at = CURRENT_TIMESTAMP,
-    updated_by = $7
-WHERE ID = $1;
+    updated_by = sqlc.arg('updated_by')
+WHERE ID = sqlc.arg('id')
+RETURNING *;
 
 -- name: DeleteCompany :exec
 DELETE FROM companies

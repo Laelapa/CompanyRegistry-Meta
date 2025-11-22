@@ -117,38 +117,52 @@ func (q *Queries) GetCompanyByName(ctx context.Context, name string) (Company, e
 	return i, err
 }
 
-const updateCompany = `-- name: UpdateCompany :exec
+const updateCompany = `-- name: UpdateCompany :one
 UPDATE companies
 SET
-    name = COALESCE($2, name),
-    description = COALESCE($3, description),
-    employee_count = COALESCE($4, employee_count),
-    registered = COALESCE($5, registered),
-    company_type = COALESCE($6, company_type),
+    name = COALESCE($1, name),
+    description = COALESCE($2, description),
+    employee_count = COALESCE($3, employee_count),
+    registered = COALESCE($4, registered),
+    company_type = COALESCE($5, company_type),
     updated_at = CURRENT_TIMESTAMP,
-    updated_by = $7
-WHERE ID = $1
+    updated_by = $6
+WHERE ID = $7
+RETURNING id, name, description, employee_count, registered, company_type, created_at, updated_at, created_by, updated_by
 `
 
 type UpdateCompanyParams struct {
-	ID            uuid.UUID   `json:"id"`
-	Name          string      `json:"name"`
+	Name          pgtype.Text `json:"name"`
 	Description   pgtype.Text `json:"description"`
-	EmployeeCount int32       `json:"employee_count"`
-	Registered    bool        `json:"registered"`
-	CompanyType   string      `json:"company_type"`
+	EmployeeCount pgtype.Int4 `json:"employee_count"`
+	Registered    pgtype.Bool `json:"registered"`
+	CompanyType   pgtype.Text `json:"company_type"`
 	UpdatedBy     pgtype.UUID `json:"updated_by"`
+	ID            uuid.UUID   `json:"id"`
 }
 
-func (q *Queries) UpdateCompany(ctx context.Context, arg UpdateCompanyParams) error {
-	_, err := q.db.Exec(ctx, updateCompany,
-		arg.ID,
+func (q *Queries) UpdateCompany(ctx context.Context, arg UpdateCompanyParams) (Company, error) {
+	row := q.db.QueryRow(ctx, updateCompany,
 		arg.Name,
 		arg.Description,
 		arg.EmployeeCount,
 		arg.Registered,
 		arg.CompanyType,
 		arg.UpdatedBy,
+		arg.ID,
 	)
-	return err
+	var i Company
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.EmployeeCount,
+		&i.Registered,
+		&i.CompanyType,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.CreatedBy,
+		&i.UpdatedBy,
+	)
+	return i, err
 }
