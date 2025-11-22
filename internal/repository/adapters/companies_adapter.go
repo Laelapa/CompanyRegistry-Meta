@@ -106,6 +106,10 @@ func (p *PGCompanyRepoAdapter) Update(ctx context.Context, c *domain.Company) (*
 	return p.toDomainType(&dbCompany), nil
 }
 
+func (p *PGCompanyRepoAdapter) Delete(ctx context.Context, id uuid.UUID) error {
+	return p.q.DeleteCompany(ctx, id)
+}
+
 func (p *PGCompanyRepoAdapter) toDomainType(c *repository.Company) *domain.Company {
 	ct := domain.CompanyType(c.CompanyType)
 	cb := typeconvert.PgtypeUUIDToGoogleUUID(c.CreatedBy)

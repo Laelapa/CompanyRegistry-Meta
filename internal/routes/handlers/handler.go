@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/Laelapa/CompanyRegistry/auth/tokenauthority"
-	"github.com/Laelapa/CompanyRegistry/internal/repository"
+	"github.com/Laelapa/CompanyRegistry/internal/service"
 	"github.com/Laelapa/CompanyRegistry/logging"
 
 	"github.com/go-playground/validator/v10"
@@ -11,7 +11,7 @@ import (
 
 type Handler struct {
 	logger         *logging.Logger
-	queries        *repository.Queries
+	service        *service.Service
 	tokenAuthority *tokenauthority.TokenAuthority
 	kafkaClient    *kgo.Client
 	validator      *validator.Validate
@@ -19,13 +19,13 @@ type Handler struct {
 
 func New(
 	logger *logging.Logger,
-	queries *repository.Queries,
+	service *service.Service,
 	tokenAuthority *tokenauthority.TokenAuthority,
 	kafkaClient *kgo.Client,
 ) *Handler {
 	return &Handler{
 		logger:         logger,
-		queries:        queries,
+		service:        service,
 		tokenAuthority: tokenAuthority,
 		kafkaClient:    kafkaClient,
 		validator:      validator.New(validator.WithRequiredStructEnabled()),

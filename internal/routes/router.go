@@ -5,8 +5,8 @@ import (
 
 	"github.com/Laelapa/CompanyRegistry/auth/tokenauthority"
 	"github.com/Laelapa/CompanyRegistry/internal/middleware"
-	"github.com/Laelapa/CompanyRegistry/internal/repository"
 	"github.com/Laelapa/CompanyRegistry/internal/routes/handlers"
+	"github.com/Laelapa/CompanyRegistry/internal/service"
 	"github.com/Laelapa/CompanyRegistry/logging"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -14,14 +14,14 @@ import (
 func Setup(
 	staticDir string,
 	logger *logging.Logger,
-	queries *repository.Queries,
+	service *service.Service,
 	tokenAuthority *tokenauthority.TokenAuthority,
 	kafkaClient *kgo.Client,
 ) *http.ServeMux {
 	mux := http.NewServeMux()
 	fileServer := http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir)))
 
-	h := handlers.New(logger, queries, tokenAuthority, kafkaClient)
+	h := handlers.New(logger, service, tokenAuthority, kafkaClient)
 
 	// Wrapper for handlers that require authenticated access
 	withAuth := func(handler func(http.ResponseWriter, *http.Request)) http.Handler {

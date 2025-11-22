@@ -15,6 +15,8 @@ import (
 	"github.com/Laelapa/CompanyRegistry/internal/app"
 	"github.com/Laelapa/CompanyRegistry/internal/config"
 	"github.com/Laelapa/CompanyRegistry/internal/repository"
+	"github.com/Laelapa/CompanyRegistry/internal/repository/adapters"
+	"github.com/Laelapa/CompanyRegistry/internal/service"
 	"github.com/Laelapa/CompanyRegistry/logging"
 )
 
@@ -58,6 +60,10 @@ func run() error {
 	logger.Info("Database connection verified")
 
 	queries := repository.New(dbPool)
+	service := &service.Service{
+		User:    service.NewUserService(adapters.NewPGUserRepoAdapter(queries)),
+		Company: service.NewCompanyService(adapters.NewPGCompanyRepoAdapter(queries)),
+	}
 
 	tokenAuthority := tokenauthority.New(&cfg.Auth)
 
@@ -83,7 +89,7 @@ func run() error {
 	app := app.New(
 		&cfg.Server,
 		logger,
-		queries,
+		service,
 		tokenAuthority,
 		kafkaClient,
 	)
