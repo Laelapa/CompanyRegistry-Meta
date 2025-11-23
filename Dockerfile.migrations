@@ -1,0 +1,7 @@
+# This is only used by the docker compose configurations.
+
+FROM golang:bookworm
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+WORKDIR /app
+COPY internal/migrations /app/migrations
+CMD ["goose", "-dir", "/app/migrations", "up"]
