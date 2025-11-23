@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Laelapa/CompanyRegistry/util/netutils"
+
 	"go.uber.org/zap"
 )
 
