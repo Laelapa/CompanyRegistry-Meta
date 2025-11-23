@@ -59,38 +59,16 @@ func (q *Queries) CreateCompany(ctx context.Context, arg CreateCompanyParams) (C
 	return i, err
 }
 
-const deleteCompany = `-- name: DeleteCompany :exec
+const deleteCompany = `-- name: DeleteCompany :one
 DELETE FROM companies
 WHERE ID = $1
+RETURNING ID
 `
 
-func (q *Queries) DeleteCompany(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, deleteCompany, id)
-	return err
-}
-
-const getCompanyByID = `-- name: GetCompanyByID :one
-SELECT id, name, description, employee_count, registered, company_type, created_at, updated_at, created_by, updated_by
-FROM companies
-WHERE ID = $1
-`
-
-func (q *Queries) GetCompanyByID(ctx context.Context, id uuid.UUID) (Company, error) {
-	row := q.db.QueryRow(ctx, getCompanyByID, id)
-	var i Company
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Description,
-		&i.EmployeeCount,
-		&i.Registered,
-		&i.CompanyType,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.CreatedBy,
-		&i.UpdatedBy,
-	)
-	return i, err
+func (q *Queries) DeleteCompany(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, deleteCompany, id)
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getCompanyByName = `-- name: GetCompanyByName :one

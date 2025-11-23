@@ -15,11 +15,6 @@ SELECT *
 FROM companies
 WHERE name = $1;
 
--- name: GetCompanyByID :one
-SELECT *
-FROM companies
-WHERE ID = $1;
-
 -- name: UpdateCompany :one
 UPDATE companies
 SET
@@ -33,6 +28,7 @@ SET
 WHERE ID = sqlc.arg('id')
 RETURNING *;
 
--- name: DeleteCompany :exec
+-- name: DeleteCompany :one
 DELETE FROM companies
-WHERE ID = $1;
+WHERE ID = $1
+RETURNING ID;

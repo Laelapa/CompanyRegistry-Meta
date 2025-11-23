@@ -33,23 +33,18 @@ func NewUserService(
 
 // Register creates a new user and returns a signed JWT
 // effectively logging them in upon registration.
+// It returns domain.ErrConflict if the username is already taken.
 func (u *UserService) Register(
 	ctx context.Context,
 	username,
 	password string,
 ) (signedJWT string, err error) {
-	// Check if username already exists
-	existingUser, uErr := u.repo.GetByUsername(ctx, username)
-	// If it exists, return conflict error
-	if uErr == nil && existingUser != nil {
-		return "", domain.ErrConflict
+	if username == "" {
+		return "", fmt.Errorf("username is required: %w", domain.ErrBadCredentials)
 	}
-	// If error is db error, return it
-	if uErr != nil && !errors.Is(uErr, domain.ErrNotFound) {
-		return "", uErr
+	if password == "" {
+		return "", fmt.Errorf("password is required: %w", domain.ErrBadCredentials)
 	}
-	// Otherwise proceed
-
 	// Hash the password
 	hashedPassword, pErr := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if pErr != nil {
@@ -63,13 +58,17 @@ func (u *UserService) Register(
 		Username:     &username,
 		PasswordHash: &hashedPasswordStr,
 	}
-	_, rErr := u.repo.Create(ctx, user)
+	dbUser, rErr := u.repo.Create(ctx, user)
 	if rErr != nil {
+		// Explicitly showing that it can return ErrConflict
+		if errors.Is(rErr, domain.ErrConflict) {
+			return "", domain.ErrConflict
+		}
 		return "", rErr
 	}
 
 	// Generate JWT
-	jwt, jErr := u.tokenAuthority.IssueJWT(*user.ID)
+	jwt, jErr := u.tokenAuthority.IssueJWT(*dbUser.ID)
 	if jErr != nil {
 		return "", fmt.Errorf("failed to issue JWT: %w", jErr)
 	}

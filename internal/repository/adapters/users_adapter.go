@@ -6,7 +6,9 @@ import (
 
 	"github.com/Laelapa/CompanyRegistry/internal/domain"
 	"github.com/Laelapa/CompanyRegistry/internal/repository"
+
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type PGUserRepoAdapter struct {
@@ -17,19 +19,20 @@ func NewPGUserRepoAdapter(q *repository.Queries) *PGUserRepoAdapter {
 	return &PGUserRepoAdapter{q: q}
 }
 
+// Create creates a new user.
+// If uniqueness constraints are violated, it returns domain.ErrConflict.
+// It propagates other errors from the database layer.
 func (p *PGUserRepoAdapter) Create(ctx context.Context, u *domain.User) (*domain.User, error) {
-	if u.Username == nil {
-		return nil, errors.New("username is required")
-	}
-	if u.PasswordHash == nil {
-		return nil, errors.New("password hash is required")
-	}
 	params := repository.CreateUserParams{
 		Username:     *u.Username,
 		PasswordHash: *u.PasswordHash,
 	}
 	dbUser, err := p.q.CreateUser(ctx, params)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" { // pg:unique_violation
+			return nil, domain.ErrConflict
+		}
 		return nil, err
 	}
 

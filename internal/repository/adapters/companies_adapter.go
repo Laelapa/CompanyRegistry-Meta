@@ -9,6 +9,8 @@ import (
 	"github.com/Laelapa/CompanyRegistry/util/typeconvert"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -21,19 +23,6 @@ func NewPGCompanyRepoAdapter(q *repository.Queries) *PGCompanyRepoAdapter {
 }
 
 func (p *PGCompanyRepoAdapter) Create(ctx context.Context, c *domain.Company) (*domain.Company, error) {
-	if c.Name == nil {
-		return nil, errors.New("company name is required")
-	}
-	if c.EmployeeCount == nil {
-		return nil, errors.New("employee count is required")
-	}
-	if c.Registered == nil {
-		return nil, errors.New("registered status is required")
-	}
-	if c.CompanyType == nil {
-		return nil, errors.New("company type is required")
-	}
-
 	params := repository.CreateCompanyParams{
 		Name:          *c.Name,
 		EmployeeCount: *c.EmployeeCount,
@@ -50,36 +39,31 @@ func (p *PGCompanyRepoAdapter) Create(ctx context.Context, c *domain.Company) (*
 
 	dbCompany, err := p.q.CreateCompany(ctx, params)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" { //pg:unique_violation
+			return nil, domain.ErrConflict
+		}
 		return nil, err
 	}
 
-	return p.toDomainType(&dbCompany), nil
-}
-
-func (p *PGCompanyRepoAdapter) GetByID(ctx context.Context, id uuid.UUID) (*domain.Company, error) {
-	dbCompany, err := p.q.GetCompanyByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
 	return p.toDomainType(&dbCompany), nil
 }
 
 func (p *PGCompanyRepoAdapter) GetByName(ctx context.Context, name string) (*domain.Company, error) {
 	dbCompany, err := p.q.GetCompanyByName(ctx, name)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
 		return nil, err
 	}
 	return p.toDomainType(&dbCompany), nil
 }
 
+// Update updates an existing company record in the database with capability for partial update.
+// It returns domain.ErrNotFound if it tries to update an non-existent entry.
+// It returns domain.ErrConflict if a unique constraint violation occurs.
 func (p *PGCompanyRepoAdapter) Update(ctx context.Context, c *domain.Company) (*domain.Company, error) {
-	if c.ID == nil {
-		return nil, errors.New("company ID is required")
-	}
-	if c.UpdatedBy == nil {
-		return nil, errors.New("updated_by is required")
-	}
-
 	// Handle nullable CompanyType
 	var ct pgtype.Text
 	if c.CompanyType == nil {
@@ -100,6 +84,13 @@ func (p *PGCompanyRepoAdapter) Update(ctx context.Context, c *domain.Company) (*
 
 	dbCompany, err := p.q.UpdateCompany(ctx, params)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrNotFound
+		}
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" { //pg:unique_violation
+			return nil, domain.ErrConflict
+		}
 		return nil, err
 	}
 
@@ -107,7 +98,15 @@ func (p *PGCompanyRepoAdapter) Update(ctx context.Context, c *domain.Company) (*
 }
 
 func (p *PGCompanyRepoAdapter) Delete(ctx context.Context, id uuid.UUID) error {
-	return p.q.DeleteCompany(ctx, id)
+	// We don't actually need the returned ID variable, we just need to know if it succeeded.
+	_, err := p.q.DeleteCompany(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrNotFound
+		}
+		return err
+	}
+	return nil
 }
 
 func (p *PGCompanyRepoAdapter) toDomainType(c *repository.Company) *domain.Company {
