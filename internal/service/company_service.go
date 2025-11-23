@@ -27,7 +27,13 @@ func NewCompanyService(
 	tokenAuthority *tokenauthority.TokenAuthority,
 ) *CompanyService {
 	return &CompanyService{
-		repo: repo,
-		tokenAuthority: tokenAuthority,		
+		repo:           repo,
+		tokenAuthority: tokenAuthority,
 	}
+}
+
+// Create creates a new company.
+// If uniqueness constraints are violated, it returns domain.ErrConflict.
+func (s *CompanyService) Create(ctx context.Context, c *domain.Company) (*domain.Company, error) {
+	return s.repo.Create(ctx, c)
 }

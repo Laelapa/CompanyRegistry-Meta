@@ -42,7 +42,6 @@ func (t *TokenAuthority) IssueJWT(userID uuid.UUID) (signedToken string, err err
 // It checks the signature method (must be HS256), the signature itself, and standard claims like expiration.
 //
 // It returns the subject of the token as a UUID.
-// Important: The caller must compare the returned UUID against the expected user.
 func (t *TokenAuthority) ValidateJWT(tokenString string) (subjectUUID uuid.UUID, err error) {
 	token, err := jwt.ParseWithClaims(
 		tokenString,

@@ -33,6 +33,7 @@ func NewUserService(
 
 // Register creates a new user and returns a signed JWT
 // effectively logging them in upon registration.
+// It returns domain.ErrConflict if the username is already taken.
 func (u *UserService) Register(
 	ctx context.Context,
 	username,

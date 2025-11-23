@@ -9,6 +9,7 @@ import (
 	"github.com/Laelapa/CompanyRegistry/util/typeconvert"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -50,6 +51,10 @@ func (p *PGCompanyRepoAdapter) Create(ctx context.Context, c *domain.Company) (*
 
 	dbCompany, err := p.q.CreateCompany(ctx, params)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" { //pg:unique_violation
+			return nil, domain.ErrConflict
+		}
 		return nil, err
 	}
 
