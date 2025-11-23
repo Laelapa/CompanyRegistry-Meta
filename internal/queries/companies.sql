@@ -15,11 +15,6 @@ SELECT *
 FROM companies
 WHERE name = $1;
 
--- name: GetCompanyByID :one
-SELECT *
-FROM companies
-WHERE ID = $1;
-
 -- name: UpdateCompany :one
 UPDATE companies
 SET

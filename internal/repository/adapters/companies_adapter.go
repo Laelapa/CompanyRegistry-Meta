@@ -61,14 +61,6 @@ func (p *PGCompanyRepoAdapter) Create(ctx context.Context, c *domain.Company) (*
 	return p.toDomainType(&dbCompany), nil
 }
 
-func (p *PGCompanyRepoAdapter) GetByID(ctx context.Context, id uuid.UUID) (*domain.Company, error) {
-	dbCompany, err := p.q.GetCompanyByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return p.toDomainType(&dbCompany), nil
-}
-
 func (p *PGCompanyRepoAdapter) GetByName(ctx context.Context, name string) (*domain.Company, error) {
 	dbCompany, err := p.q.GetCompanyByName(ctx, name)
 	if err != nil {
