@@ -42,7 +42,8 @@ type KafkaConfig struct {
 	ClientID string
 	Brokers  []string
 	Topic    struct {
-		Mutations string
+		CompanyMutations string
+		UserMutations    string
 	}
 }
 
@@ -116,8 +117,12 @@ func Load() (*Config, error) {
 		Kafka: KafkaConfig{
 			ClientID: getEnvWithFallback("SERVICE_NAME", defaultServiceName),
 			Brokers:  strings.Split(getEnvWithFallback("KAFKA_BROKERS", "localhost:9092"), ","),
-			Topic: struct{ Mutations string }{
-				Mutations: getEnvWithFallback("KAFKA_TOPIC_MUTATIONS", "mutations"),
+			Topic: struct {
+				CompanyMutations string
+				UserMutations    string
+			}{
+				CompanyMutations: getEnvWithFallback("KAFKA_TOPIC_COMPANIES", "company-mutations"),
+				UserMutations:    getEnvWithFallback("KAFKA_TOPIC_USERS", "user-mutations"),
 			},
 		},
 		Logging: LoggingConfig{

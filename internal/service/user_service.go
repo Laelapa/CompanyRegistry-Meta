@@ -2,12 +2,16 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
 	"github.com/Laelapa/CompanyRegistry/auth/tokenauthority"
 	"github.com/Laelapa/CompanyRegistry/internal/domain"
+	"github.com/Laelapa/CompanyRegistry/logging"
 
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,15 +23,24 @@ type UserRepository interface {
 type UserService struct {
 	repo           UserRepository
 	tokenAuthority *tokenauthority.TokenAuthority
+	logger         *logging.Logger
+	producer       EventProducer
+	topic          string
 }
 
 func NewUserService(
 	repo UserRepository,
 	tokenAuthority *tokenauthority.TokenAuthority,
+	logger *logging.Logger,
+	producer EventProducer,
+	topic string,
 ) *UserService {
 	return &UserService{
 		repo:           repo,
 		tokenAuthority: tokenAuthority,
+		logger:         logger,
+		producer:       producer,
+		topic:          topic,
 	}
 }
 
@@ -73,6 +86,7 @@ func (u *UserService) Register(
 		return "", fmt.Errorf("failed to issue JWT: %w", jErr)
 	}
 
+	u.publishEvent(ctx, "SIGNUP", *dbUser.ID)
 	return jwt, nil
 }
 
@@ -94,4 +108,26 @@ func (u *UserService) Login(ctx context.Context, username, password string) (sig
 	}
 
 	return jwt, nil
+}
+
+func (u *UserService) publishEvent(ctx context.Context, eventType string, id uuid.UUID) {
+	// pub/sub not configured
+	if u.producer == nil {
+		return
+	}
+
+	eventData := map[string]any{
+		"event": eventType,
+	}
+
+	marshalledEvent, err := json.Marshal(eventData)
+	if err != nil {
+		u.logger.Error("Failed to marshal event", zap.Error(err))
+		return
+	}
+
+	if pErr := u.producer.Produce(ctx, u.topic, id.String(), marshalledEvent); pErr != nil {
+		u.logger.Error("Failed to produce event", zap.Error(pErr))
+		return
+	}
 }
