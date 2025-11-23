@@ -93,7 +93,7 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       DYNAMIC_CONFIG_ENABLED: 'true'
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       kafka:
         condition: service_healthy
@@ -112,11 +112,11 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production_min_32_chars}
       JWT_LIFETIME: ${JWT_LIFETIME:-3h}
       SERVICE_NAME: ${SERVICE_NAME:-crDev}
-      SERVER_PORT: ${SERVER_PORT:-8081}
+      SERVER_PORT: ${SERVER_PORT:-8080}
       STATIC_DIR: ${STATIC_DIR:-/app/static}
       SERVER_SHUTDOWN_TIMEOUT: ${SERVER_SHUTDOWN_TIMEOUT:-5}
     ports:
-      - "${SERVER_PORT:-8081}:${SERVER_PORT:-8081}"
+      - "${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
     depends_on:
       postgres:
         condition: service_healthy
