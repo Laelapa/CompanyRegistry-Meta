@@ -1,4 +1,3 @@
-//nolint:dupl // TODO: Refactor into generic HandleAuth called by both Signup and Login
 package handlers
 
 import (
@@ -41,11 +40,12 @@ func (h *Handler) HandleSignup(w http.ResponseWriter, r *http.Request) {
 			"User registration failed",
 			append(h.logger.ReqFields(r), zap.Error(err))...,
 		)
-		if errors.Is(err, domain.ErrConflict) {
+		switch {
+		case errors.Is(err, domain.ErrConflict):
 			http.Error(w, "Conflict: User already exists", http.StatusConflict)
-		} else if errors.Is(err, domain.ErrBadCredentials) {
+		case errors.Is(err, domain.ErrBadCredentials):
 			http.Error(w, "Bad request: Invalid credentials", http.StatusBadRequest)
-		} else {
+		default:
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		}
 		return

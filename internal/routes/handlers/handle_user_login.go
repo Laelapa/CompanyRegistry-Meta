@@ -1,4 +1,3 @@
-//nolint:dupl // TODO: Refactor into generic HandleAuth called by both Signup and Login
 package handlers
 
 import (

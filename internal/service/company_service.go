@@ -63,3 +63,9 @@ func (s *CompanyService) Update(ctx context.Context, c *domain.Company) (*domain
 
 	return s.repo.Update(ctx, c)
 }
+
+// Delete deletes a company by ID.
+// It returns domain.ErrNotFound if the company does not exist.
+func (s *CompanyService) Delete(ctx context.Context, id uuid.UUID) error {
+	return s.repo.Delete(ctx, id)
+}

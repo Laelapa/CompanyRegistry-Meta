@@ -28,6 +28,7 @@ SET
 WHERE ID = sqlc.arg('id')
 RETURNING *;
 
--- name: DeleteCompany :exec
+-- name: DeleteCompany :one
 DELETE FROM companies
-WHERE ID = $1;
+WHERE ID = $1
+RETURNING ID;

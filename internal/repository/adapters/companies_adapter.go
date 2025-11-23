@@ -95,7 +95,15 @@ func (p *PGCompanyRepoAdapter) Update(ctx context.Context, c *domain.Company) (*
 }
 
 func (p *PGCompanyRepoAdapter) Delete(ctx context.Context, id uuid.UUID) error {
-	return p.q.DeleteCompany(ctx, id)
+	// We don't actually need the returned ID variable, we just need to know if it succeeded.
+	_, err := p.q.DeleteCompany(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrNotFound
+		}
+		return err
+	}
+	return nil
 }
 
 func (p *PGCompanyRepoAdapter) toDomainType(c *repository.Company) *domain.Company {
