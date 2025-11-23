@@ -30,6 +30,8 @@ func Setup(
 	}
 
 	mux.Handle("GET /static/", fileServer)
+	mux.HandleFunc("GET /openapi.json", h.HandleGetOpenAPI)
+	mux.HandleFunc("GET /docs", h.HandleSwaggerUI)
 
 	mux.HandleFunc("POST /api/v1/login", h.HandleLogin)
 	mux.HandleFunc("POST /api/v1/signup", h.HandleSignup)
