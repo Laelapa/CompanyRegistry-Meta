@@ -71,7 +71,7 @@ func (u *CompanyService) Create(ctx context.Context, c *domain.Company) (*domain
 		return nil, err
 	}
 
-	u.publishEvent(ctx, "CREATE", *createdCompany.ID)
+	go u.publishEvent(context.Background(), "CREATE", *createdCompany.ID)
 	return createdCompany, nil
 }
 
@@ -91,7 +91,7 @@ func (u *CompanyService) Update(ctx context.Context, c *domain.Company) (*domain
 		return nil, err
 	}
 
-	u.publishEvent(ctx, "UPDATE", *updatedCompany.ID)
+	go u.publishEvent(context.Background(), "UPDATE", *updatedCompany.ID)
 	return updatedCompany, nil
 }
 
@@ -102,7 +102,7 @@ func (u *CompanyService) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	u.publishEvent(ctx, "DELETE", id)
+	go u.publishEvent(context.Background(), "DELETE", id)
 	return nil
 }
 

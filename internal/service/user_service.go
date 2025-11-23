@@ -86,7 +86,7 @@ func (u *UserService) Register(
 		return "", fmt.Errorf("failed to issue JWT: %w", jErr)
 	}
 
-	u.publishEvent(ctx, "SIGNUP", *dbUser.ID)
+	go u.publishEvent(context.Background(), "SIGNUP", *dbUser.ID)
 	return jwt, nil
 }
 
