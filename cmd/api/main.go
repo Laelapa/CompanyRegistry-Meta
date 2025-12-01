@@ -32,7 +32,6 @@ func run() error {
 	_ = godotenv.Load()
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
-
 	cfg, err := config.Load()
 	if err != nil {
 		return err
@@ -73,6 +72,7 @@ func run() error {
 			logger.Warn("Failed to initialize Kafka client, continuing without Kafka", zap.Error(kErr))
 		} else {
 			kgoClient = client
+			defer kgoClient.Close()
 			producer = events.NewProducer(kgoClient)
 			logger.Info(
 				"Kafka client initialized",
