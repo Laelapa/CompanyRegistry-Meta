@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This repository is a fork of https://github.com/Laelapa/CompanyRegistry and it contains fixes, upgrades, misc refactors, additions, and other improvements to the original repository.
+
 # Company Registry API
 
 A Go REST API designed to demonstrate a layered, configurable, and decoupled architecture. This service manages company records and user identities, utilizing PostgreSQL for persistence and Kafka for event propagation, docker & docker compose for streamlined deployments, ci workflows & linting for code quality, easy configurability, and type-safe database access with [sqlc](https://sqlc.dev/) and pgx.
