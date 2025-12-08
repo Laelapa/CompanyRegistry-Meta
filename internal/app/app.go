@@ -122,3 +122,9 @@ func (app *App) ShutdownServer() {
 	}
 	app.logger.Info("HTTP server shut down successfully")
 }
+
+// ServeHTTP implements http.Handler interface for App.
+// This allows testing without needing to start a blocking port listener.
+func (app *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	app.server.Handler.ServeHTTP(w, r)
+}
