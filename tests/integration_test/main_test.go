@@ -12,7 +12,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
-var testDBPool *pgxpool.Pool
+var testDBPool *pgxpool.Pool //nolint:gochecknoglobals // Used by the integration test suite
 
 //nolint:forbidigo // Allow fmt in test main
 func TestMain(m *testing.M) {
@@ -41,7 +41,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	if gErr := goose.Up(gooseCon, "../internal/migrations"); gErr != nil {
+	if gErr := goose.Up(gooseCon, "../../internal/migrations"); gErr != nil {
 		fmt.Printf("failed to run migrations: %s\n", gErr)
 		os.Exit(1)
 	}
