@@ -4,13 +4,13 @@
 > Patch notes:
 > - Fixed improper closure of franz/kgo connection when server is shutting down,
 > - Used more sensible contexts with timeouts to event publishing goroutines,
-> - Added user flow integration test & testing environment initialization functions
+> - Added user flow integration test & testing environment initialization functions.
 >
 > WIP & Planned changes/improvements:
 > - Add panic-handling middleware,
 > - Implement waitgroups for event-publishing goroutines so they're handled properly during server shutdown,
-> - Add rate-limiting middleware.
-> - Expand tests (unit, e2e, non-story-based integration tests)
+> - Add rate-limiting middleware,
+> - Expand tests (unit, e2e, non-story-based integration tests).
 
 # Company Registry API
 
