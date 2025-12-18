@@ -1,5 +1,14 @@
 > [!IMPORTANT]
 > This repository is a fork of https://github.com/Laelapa/CompanyRegistry and it contains fixes, upgrades, misc refactors, additions, and other improvements to the original repository.
+> Patch notes:
+> - Fixed improper closure of franz/kgo connection when server is shutting down,
+> - Used more sensible contexts with timeouts to event publishing goroutines,
+> - Added user flow integration test & testing environment initialization functions
+>
+> WIP & Planned changes/improvements:
+> - Add panic-handling middleware,
+> - Implement waitgroups for event-publishing goroutines so they're handled properly during server shutdown,
+> - Add rate-limiting middleware.
 
 # Company Registry API
 
